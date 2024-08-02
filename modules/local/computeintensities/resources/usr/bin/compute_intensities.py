@@ -49,7 +49,7 @@ def auto_threshold(img):
 threadpoolctl.threadpool_limits(1)
 
 parser = argparse.ArgumentParser()
-parser.add_argument('-i', '--input', nargs='*', help='Input tif paths')
+parser.add_argument('-i', '--input', required=True, nargs='+', help='Input tif paths')
 parser.add_argument('-c', '--csv', help='Output .csv file containing full intensities table')
 parser.add_argument('-j', '--jobs', default=0, type=int, help='Number of jobs to run simultaneously (default: number of available CPUs)')
 args = parser.parse_args()

@@ -17,11 +17,14 @@ process COMPUTEINTENSITIES {
     task.ext.when == null || task.ext.when
 
     script:
-    def args = task.ext.args ?: ''
+    def args = [
+        task.ext.args ?: '',
+        "-j $task.cpus",
+        "-i $input",
+    ].join(' ')
 
-    template 'compute_intensities.py'
     """
-    echo 'hello world'
+    compute_intensities.py $args
 
     cat <<-END_VERSIONS > versions.yml
     "${task.process}":
