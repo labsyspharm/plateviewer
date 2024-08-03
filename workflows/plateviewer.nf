@@ -18,17 +18,22 @@ include { methodsDescriptionText } from '../subworkflows/local/utils_nfcore_plat
 workflow PLATEVIEWER {
 
     take:
-    image_paths
+    images
 
     main:
 
     ch_versions = Channel.empty()
 
-    image_paths
-        .dump(tag: 'image_path')
+    images
+        .map{ meta, image -> [meta.channel, image] }
+        .groupTuple()
+        .dump(tag: 'COMPUTEINTENSITIES in')
         | COMPUTEINTENSITIES
-
-    COMPUTEINTENSITIES.out.output.dump(tag: 'COMPUTEINTENSITIES')
+    ch_versions = ch_versions.mix(COMPUTEINTENSITIES.out.versions)
+    COMPUTEINTENSITIES.out.intensities
+        .map{ meta, stdout -> [meta, *stdout.split()[0..1]] }
+        .dump(tag: 'ch_intensities')
+        .set{ ch_intensities }
 
     //
     // Collate and save software versions

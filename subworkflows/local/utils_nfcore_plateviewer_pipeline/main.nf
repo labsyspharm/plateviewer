@@ -81,15 +81,15 @@ workflow PIPELINE_INITIALISATION {
     // Create channel from input file provided through params.input
     //
     Channel
-        .of(input)
-        .map {
-            validateImagePath(it)
+        .fromPath("$input/*.tif")
+        .flatMap {
+            parseImagePath(it)
         }
-        .set { ch_imagepaths }
+        .set { ch_images }
 
     emit:
-    image_paths = ch_imagepaths
-    versions    = ch_versions
+    images   = ch_images
+    versions = ch_versions
 }
 
 /*
@@ -144,10 +144,16 @@ def validateInputParameters() {
 }
 
 //
-// Validate channels from input samplesheet
+// Filter and parse image filenames obtained from input path
 //
-def validateImagePath(input) {
-    return input
+def parseImagePath(path) {
+    m = path =~ /_([A-H]\d\d)_s(\d+)_w(\d).{8}(-.{4}){3}-.{12}\.tif$/
+    if (m) {
+        meta = [['well', 'site', 'channel'], m[0][1..-1]].transpose().collectEntries()
+        return [[meta, path]]
+    } else {
+        return []
+    }
 }
 
 //

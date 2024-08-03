@@ -33,7 +33,7 @@ include { PIPELINE_COMPLETION     } from './subworkflows/local/utils_nfcore_plat
 workflow NFCORE_PLATEVIEWER {
 
     take:
-    image_paths
+    images
 
     main:
 
@@ -41,7 +41,7 @@ workflow NFCORE_PLATEVIEWER {
     // WORKFLOW: Run pipeline
     //
     PLATEVIEWER (
-        image_paths
+        images
     )
 
     //emit:
@@ -74,7 +74,7 @@ workflow {
     // WORKFLOW: Run main workflow
     //
     NFCORE_PLATEVIEWER (
-        PIPELINE_INITIALISATION.out.image_paths
+        PIPELINE_INITIALISATION.out.images
     )
 
     //

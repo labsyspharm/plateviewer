@@ -64,14 +64,13 @@ if args.jobs == 0:
         args.jobs = len(os.sched_getaffinity(0))
     else:
         args.jobs = multiprocessing.cpu_count()
-print(f"Worker threads: {args.jobs}")
+print(f"Worker threads: {args.jobs}", file=sys.stderr)
 pool = concurrent.futures.ThreadPoolExecutor(max_workers=args.jobs)
 futures = [pool.submit(process, p) for p in args.input]
 intensities = [f.result() for f in tqdm.tqdm(concurrent.futures.as_completed(futures), total=len(futures))]
 
 vmin, vmax = np.median(intensities, axis=0).round().astype(int)
-print()
-print("-I", vmin, vmax)
+print(vmin, vmax)
 
 if args.csv:
     with open(args.csv, 'w') as f:

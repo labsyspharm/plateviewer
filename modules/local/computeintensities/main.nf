@@ -1,5 +1,5 @@
 process COMPUTEINTENSITIES {
-    label ''
+    label 'process_medium'
 
     conda "${moduleDir}/environment.yml"
     // container "${ workflow.containerEngine == 'singularity' && !task.ext.singularity_pull_docker_container ?
@@ -7,11 +7,11 @@ process COMPUTEINTENSITIES {
     //     'biocontainers/YOUR-TOOL-HERE' }"
 
     input:
-    path input
+    tuple val(meta), path(input)
 
     output:
-    stdout               emit: output
-    path "versions.yml", emit: versions
+    tuple val(meta), stdout, emit: intensities
+    path "versions.yml"    , emit: versions
 
     when:
     task.ext.when == null || task.ext.when
