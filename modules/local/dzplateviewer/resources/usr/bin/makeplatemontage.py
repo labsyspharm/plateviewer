@@ -41,7 +41,6 @@ import time  # time the execution
 # import concurrent.futures  # try to accomplish this the second way
 from joblib import Parallel, delayed
 import pathlib
-import skimage.transform
 
 ####
 # This section contains the code from: https://github.com/openzoom/deepzoom.py
@@ -70,15 +69,14 @@ from collections import deque
 
 NS_DEEPZOOM = "http://schemas.microsoft.com/deepzoom/2008"
 
-DEFAULT_RESIZE_FILTER = Image.ANTIALIAS
+DEFAULT_RESIZE_FILTER = Image.LANCZOS
 DEFAULT_IMAGE_FORMAT = "png"
 
 RESIZE_FILTERS = {
-    "cubic": Image.CUBIC,
     "bilinear": Image.BILINEAR,
     "bicubic": Image.BICUBIC,
     "nearest": Image.NEAREST,
-    "antialias": Image.ANTIALIAS,
+    "antialias": Image.LANCZOS,
 }
 
 IMAGE_FORMATS = {
@@ -204,7 +202,7 @@ class ImageCreator(object):
         if self.descriptor.width == width and self.descriptor.height == height:
             return self.image
         if (self.resize_filter is None) or (self.resize_filter not in RESIZE_FILTERS):
-            return self.image.resize((width, height), Image.ANTIALIAS)
+            return self.image.resize((width, height), Image.LANCZOS)
         return self.image.resize((width, height), RESIZE_FILTERS[self.resize_filter])
 
     def tiles(self, level):

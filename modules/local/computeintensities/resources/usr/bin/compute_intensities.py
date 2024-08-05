@@ -10,7 +10,7 @@ import sklearn.mixture
 import sys
 import threadpoolctl
 import tifffile
-import tqdm
+import time
 
 
 def auto_threshold(img):
@@ -46,6 +46,26 @@ def auto_threshold(img):
     return vmin, vmax
 
 
+def progress(it, total, interval=10):
+
+    def log(i):
+        timestamp = time.strftime('%Y-%m-%d %H:%M:%S')
+        percentage = round(i / total * 100)
+        print(f'{timestamp} progress: {percentage}% ({i} / {total})')
+
+    log(0)
+    last_log = time.time()
+    last_i = 0
+    for i, item in enumerate(it, 1):
+        now = time.time()
+        if now >= last_log + interval or (i == total and last_i < i):
+            log(i)
+            last_log = now
+            last_i = i
+        yield item
+    print('Done!')
+
+
 parser = argparse.ArgumentParser()
 parser.add_argument('-i', '--input', required=True, nargs='+', help='Input tif paths')
 parser.add_argument('-o', '--output', required=True, help='Output .csv file containing min/max intensities')
@@ -63,13 +83,14 @@ if args.jobs == 0:
         args.jobs = len(os.sched_getaffinity(0))
     else:
         args.jobs = multiprocessing.cpu_count()
-print(f"Worker threads: {args.jobs}", file=sys.stderr)
+print(f"Worker threads: {args.jobs}")
 
 threadpoolctl.threadpool_limits(1)
 
 pool = concurrent.futures.ThreadPoolExecutor(max_workers=args.jobs)
 futures = [pool.submit(process, p) for p in args.input]
-intensities = [f.result() for f in tqdm.tqdm(concurrent.futures.as_completed(futures), total=len(futures))]
+it = concurrent.futures.as_completed(futures)
+intensities = [f.result() for f in progress(it, len(futures))]
 
 vmin, vmax = np.median(intensities, axis=0).round().astype(int)
 with open(args.output, 'w') as f:

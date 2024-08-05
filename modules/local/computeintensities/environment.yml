@@ -1,0 +1,10 @@
+name: computeintensitieschannels
+  - conda-forge
+  - bioconda
+  - defaults
+dependencies:
+  - numpy
+  - scipy
+  - scikit-learn
+  - threadpoolctl
+  - tifffile

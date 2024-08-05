@@ -1,0 +1,10 @@
+name: dzplateviewer
+channels:
+  - conda-forge
+  - bioconda
+  - defaults
+dependencies:
+  - imageio
+  - joblib
+  - numpy
+  - pillow
