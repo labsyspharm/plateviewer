@@ -46,10 +46,9 @@ def auto_threshold(img):
     return vmin, vmax
 
 
-threadpoolctl.threadpool_limits(1)
-
 parser = argparse.ArgumentParser()
 parser.add_argument('-i', '--input', required=True, nargs='+', help='Input tif paths')
+parser.add_argument('-o', '--output', required=True, help='Output .csv file containing min/max intensities')
 parser.add_argument('-c', '--csv', help='Output .csv file containing full intensities table')
 parser.add_argument('-j', '--jobs', default=0, type=int, help='Number of jobs to run simultaneously (default: number of available CPUs)')
 args = parser.parse_args()
@@ -65,12 +64,17 @@ if args.jobs == 0:
     else:
         args.jobs = multiprocessing.cpu_count()
 print(f"Worker threads: {args.jobs}", file=sys.stderr)
+
+threadpoolctl.threadpool_limits(1)
+
 pool = concurrent.futures.ThreadPoolExecutor(max_workers=args.jobs)
 futures = [pool.submit(process, p) for p in args.input]
 intensities = [f.result() for f in tqdm.tqdm(concurrent.futures.as_completed(futures), total=len(futures))]
 
 vmin, vmax = np.median(intensities, axis=0).round().astype(int)
-print(vmin, vmax)
+with open(args.output, 'w') as f:
+    f.write('Vmin,Vmax\n')
+    f.write(f'{vmin},{vmax}\n')
 
 if args.csv:
     with open(args.csv, 'w') as f:

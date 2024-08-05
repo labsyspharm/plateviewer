@@ -5,6 +5,7 @@
 */
 
 include { COMPUTEINTENSITIES     } from '../modules/local/computeintensities'
+include { DZPLATEVIEWER          } from '../modules/local/dzplateviewer'
 include { paramsSummaryMap       } from 'plugin/nf-validation'
 include { softwareVersionsToYAML } from '../subworkflows/nf-core/utils_nfcore_pipeline'
 include { methodsDescriptionText } from '../subworkflows/local/utils_nfcore_plateviewer_pipeline'
@@ -25,15 +26,22 @@ workflow PLATEVIEWER {
     ch_versions = Channel.empty()
 
     images
-        .map{ meta, image -> [meta.channel, image] }
+        .map{ meta, image -> [meta.subMap('channel'), image] }
         .groupTuple()
-        .dump(tag: 'COMPUTEINTENSITIES in')
+        .dump(tag: 'ch_channel_images')
+        .set{ ch_channel_images }
+
+    ch_channel_images
         | COMPUTEINTENSITIES
     ch_versions = ch_versions.mix(COMPUTEINTENSITIES.out.versions)
+
     COMPUTEINTENSITIES.out.intensities
-        .map{ meta, stdout -> [meta, *stdout.split()[0..1]] }
-        .dump(tag: 'ch_intensities')
-        .set{ ch_intensities }
+        .map{ meta, csv, csv_all -> [meta, csv.splitCsv(header: true).first()] }
+        .join(ch_channel_images)
+        .map{ meta, intensities, images -> [meta, images, intensities] }
+        .dump(tag: 'DZPLATEVIEWER_in')
+        | DZPLATEVIEWER
+    ch_versions = ch_versions.mix(DZPLATEVIEWER.out.versions)
 
     //
     // Collate and save software versions
