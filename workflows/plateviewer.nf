@@ -36,7 +36,7 @@ workflow PLATEVIEWER {
     ch_versions = ch_versions.mix(COMPUTEINTENSITIES.out.versions)
 
     COMPUTEINTENSITIES.out.intensities
-        .map{ meta, csv, csv_all -> [meta, csv.splitCsv(header: true).first()] }
+        .map{ meta, csv -> [meta, csv.splitCsv(header: true).first()] }
         .join(ch_channel_images)
         .map{ meta, intensities, images -> [meta, images, intensities] }
         .dump(tag: 'DZPLATEVIEWER_in')

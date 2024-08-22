@@ -1,5 +1,5 @@
 process COMPUTEINTENSITIES {
-    label 'process_low'
+    label 'process_medium'
 
     conda "${moduleDir}/environment.yml"
     // container "${ workflow.containerEngine == 'singularity' && !task.ext.singularity_pull_docker_container ?
@@ -10,8 +10,9 @@ process COMPUTEINTENSITIES {
     tuple val(meta), path(input)
 
     output:
-    tuple val(meta), path('*_intensities.csv'), path('*_intensities_all.csv'), emit: intensities
-    path "versions.yml"                                                      , emit: versions
+    tuple val(meta), path('intensities.csv'),     emit: intensities
+    tuple val(meta), path('intensities_all.csv'), emit: intensities_all
+    path "versions.yml",                          emit: versions
 
     when:
     task.ext.when == null || task.ext.when
@@ -22,8 +23,8 @@ process COMPUTEINTENSITIES {
         task.ext.args ?: '',
         "-j $task.cpus",
         "-i $input",
-        "-o ch${ch}_intensities.csv",
-        "-c ch${ch}_intensities_all.csv",
+        "-o intensities.csv",
+        "-c intensities_all.csv",
     ].join(' ')
 
     """

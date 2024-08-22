@@ -1,4 +1,5 @@
 name: computeintensitieschannels
+channels:
   - conda-forge
   - bioconda
   - defaults
