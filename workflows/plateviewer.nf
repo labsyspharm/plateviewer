@@ -6,6 +6,7 @@
 
 include { COMPUTEINTENSITIES     } from '../modules/local/computeintensities'
 include { DZPLATEVIEWER          } from '../modules/local/dzplateviewer'
+include { MINERVASTORY           } from '../modules/local/minervastory'
 include { paramsSummaryMap       } from 'plugin/nf-validation'
 include { softwareVersionsToYAML } from '../subworkflows/nf-core/utils_nfcore_pipeline'
 include { methodsDescriptionText } from '../subworkflows/local/utils_nfcore_plateviewer_pipeline'
@@ -42,6 +43,13 @@ workflow PLATEVIEWER {
         .dump(tag: 'DZPLATEVIEWER_in')
         | DZPLATEVIEWER
     ch_versions = ch_versions.mix(DZPLATEVIEWER.out.versions)
+
+    ch_channel_images
+        .collect({ meta, image -> meta }, sort: { it.channel })
+        .map{ metas -> [[:], metas] }
+        .dump(tag: 'MINERVASTORY_in')
+        | MINERVASTORY
+    ch_versions = ch_versions.mix(MINERVASTORY.out.versions)
 
     //
     // Collate and save software versions
