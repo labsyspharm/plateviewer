@@ -51,7 +51,7 @@ def progress(it, total, interval=10):
     def log(i):
         timestamp = time.strftime('%Y-%m-%d %H:%M:%S')
         percentage = round(i / total * 100)
-        print(f'{timestamp} progress: {percentage}% ({i} / {total})')
+        print(f'{timestamp} progress: {percentage}% ({i} / {total})', flush=True)
 
     log(0)
     last_log = time.time()
@@ -63,7 +63,7 @@ def progress(it, total, interval=10):
             last_log = now
             last_i = i
         yield item
-    print('Done!')
+    print('Done!', flush=True)
 
 
 parser = argparse.ArgumentParser()
