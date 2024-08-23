@@ -675,8 +675,10 @@ if __name__ == "__main__":
         bgEmptyWell = imDepthOut  # color of empty canvas for well montage
         bgEmptyPlate = imDepthOut  # color of empty canvas for plate montage
 
-    myFontFOV = ImageFont.truetype(font='fonts/arial.ttf', size=200)
-    myFontWell = ImageFont.truetype(font='fonts/arial.ttf', size=300)
+    font_path = str(pathlib.Path(__file__).resolve().parent / 'arial.ttf')
+    myFontFOV = ImageFont.truetype(font=font_path, size=200)
+    myFontWell = ImageFont.truetype(font=font_path, size=300)
+    print(myFontFOV.getname())
 
     # Work
 
