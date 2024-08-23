@@ -26,6 +26,12 @@ def parseDzi(Path xml_file) {
     return [width: p.Size[0].@Width as int, height: p.Size[0].@Height as int]
 }
 
+def getWellDimensions(int numSites) {
+    def width = Math.ceil(Math.sqrt(numSites)) as int
+    def height = Math.ceil(numSites / width) as int
+    return [width: width, height: height]
+}
+
 
 workflow PLATEVIEWER {
 
@@ -51,6 +57,12 @@ workflow PLATEVIEWER {
             COMPUTEINTENSITIES.out.intensities
                 .map{ meta, csv -> [meta, csv.splitCsv(header: true).first()] }
         )
+        .combine(
+            images
+                .map{ meta, image -> meta.site as int }
+                .max()
+                .map{ getWellDimensions(it) }
+        )
         .dump(tag: 'DZPLATEVIEWER_in')
         | DZPLATEVIEWER
     ch_versions = ch_versions.mix(DZPLATEVIEWER.out.versions)
@@ -66,10 +78,10 @@ workflow PLATEVIEWER {
             RENAMETILES.out.images
                 .map{ meta, images -> meta }
         )
-        .map { meta1, meta2 ->
-            def m = meta1 + meta2
-            def c = m.remove('channel')
-            [m, [channel: c]]
+        .map{ meta1, meta2 ->
+            def meta = meta1 + meta2
+            def c = meta.remove('channel')
+            [meta, [channel: c]]
         }
         .groupTuple()
         .dump(tag: 'MINERVASTORY_in')

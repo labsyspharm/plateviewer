@@ -7,7 +7,7 @@ process DZPLATEVIEWER {
     //     'biocontainers/YOUR-TOOL-HERE' }"
 
     input:
-    tuple val(meta), path(input, stageAs: 'input/*'), val(intensities)
+    tuple val(meta), path(input, stageAs: 'input/*'), val(intensities), val(wellDims)
 
     output:
     tuple val(meta), path('*_files/*/*.jpg'), emit: images
@@ -28,7 +28,7 @@ process DZPLATEVIEWER {
         -o . \\
         -r $task.cpus \\
         -p 12 8 \\
-        -w 3 3 \\
+        -w $wellDims.width $wellDims.height \\
         -m 2048 2048 \\
         -t 1024 \\
         -c $ch \\
