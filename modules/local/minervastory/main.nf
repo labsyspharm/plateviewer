@@ -1,8 +1,11 @@
+import groovy.json.JsonOutput
+
+
 process MINERVASTORY {
     label 'process_single'
 
     input:
-    tuple val(meta), val(metas)
+    tuple val(meta), val(channel_metas)
 
     output:
     tuple val(meta), path('index.html'), emit: story
@@ -13,85 +16,51 @@ process MINERVASTORY {
 
     exec:
 
-    def exhibit = """\
-    {
-      "Images": [
-        {
-          "Name": "i0",
-          "Description": "",
-          "Path": ".",
-          "Width": 74178,
-          "Height": 49442,
-          "MaxLevel": 17
-        }
+    def exhibit = [
+      Images: [
+        [
+          Name: "i0",
+          Description: "",
+          Path: ".",
+          Width: meta.width,
+          Height: meta.height,
+          MaxLevel: meta.levels
+        ]
       ],
-      "Header": "",
-      "Rotation": 0,
-      "Layout": {
-        "Grid": [
+      Header: "",
+      Rotation: 0,
+      Layout: [
+        Grid: [
           [
             "i0"
           ]
         ]
-      },
-      "Stories": [
-        {
-          "Name": "",
-          "Description": "",
-          "Waypoints": []
-        }
       ],
-      "Channels": [
-          {
-              "Name": "Hoechst",
-              "Path": "1"
-          },
-          {
-              "Name": "4EBP1",
-              "Path": "2"
-          },
-          {
-              "Name": "Edu",
-              "Path": "3"
-          },
-          {
-              "Name": "LDR",
-              "Path": "4"
-          },
-          {
-              "Name": "EGFR",
-              "Path": "5"
-          }
+      Stories: [
+        [
+          Name: "",
+          Description: "",
+          Waypoints: []
+        ]
       ],
-        "Groups": [
-            {
-                "Name": "Overview",
-                "Colors": [
+      Channels: channel_metas.collect{ [Name: it.channel, Path: it.channel] },
+        Groups: [
+            [
+                Name: "Overview",
+                Colors: [
                     "0000ff",
                     "ffff00",
                     "00ffff",
                     "00ff00",
                     "ff0000"
                 ],
-                "Channels": [
-                    "Hoechst",
-                    "4EBP1",
-                    "Edu",
-                    "LDR",
-                    "EGFR"
-                ],
-                "Descriptions": [
-                    "",
-                    "",
-                    "",
-                    "",
-                    ""
-                ]
-            }
+                Channels: channel_metas.collect{ it.channel },
+                Descriptions: channel_metas.collect{ '' }
+            ]
         ],
-        "Masks": []
-    }
-    """.stripIndent()
+        Masks: []
+    ]
+    def exhibitJson = JsonOutput.prettyPrint(JsonOutput.toJson(exhibit))
 
     file("${task.workDir}/index.html").text = """\
     <!DOCTYPE html>
@@ -112,7 +81,7 @@ process MINERVASTORY {
               hideWelcome: true,
               cellTypeData: [],
               markerData: [],
-              exhibit: ${exhibit},
+              exhibit: $exhibitJson,
               id: "minerva-browser",
               embedded: true
             });

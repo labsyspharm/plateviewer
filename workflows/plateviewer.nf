@@ -6,6 +6,7 @@
 
 include { COMPUTEINTENSITIES     } from '../modules/local/computeintensities'
 include { DZPLATEVIEWER          } from '../modules/local/dzplateviewer'
+include { RENAMETILES            } from '../modules/local/renametiles'
 include { MINERVASTORY           } from '../modules/local/minervastory'
 include { paramsSummaryMap       } from 'plugin/nf-validation'
 include { softwareVersionsToYAML } from '../subworkflows/nf-core/utils_nfcore_pipeline'
@@ -16,6 +17,15 @@ include { methodsDescriptionText } from '../subworkflows/local/utils_nfcore_plat
     RUN MAIN WORKFLOW
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 */
+
+import groovy.xml.XmlParser
+
+
+def parseDzi(Path xml_file) {
+    def p = new XmlParser().parseText(xml_file.text)
+    return [width: p.Size[0].@Width as int, height: p.Size[0].@Height as int]
+}
+
 
 workflow PLATEVIEWER {
 
@@ -36,17 +46,32 @@ workflow PLATEVIEWER {
         | COMPUTEINTENSITIES
     ch_versions = ch_versions.mix(COMPUTEINTENSITIES.out.versions)
 
-    COMPUTEINTENSITIES.out.intensities
-        .map{ meta, csv -> [meta, csv.splitCsv(header: true).first()] }
-        .join(ch_channel_images)
-        .map{ meta, intensities, images -> [meta, images, intensities] }
+    ch_channel_images
+        .join(
+            COMPUTEINTENSITIES.out.intensities
+                .map{ meta, csv -> [meta, csv.splitCsv(header: true).first()] }
+        )
         .dump(tag: 'DZPLATEVIEWER_in')
         | DZPLATEVIEWER
     ch_versions = ch_versions.mix(DZPLATEVIEWER.out.versions)
 
-    ch_channel_images
-        .collect({ meta, image -> meta }, sort: { it.channel })
-        .map{ metas -> [[:], metas] }
+    DZPLATEVIEWER.out.images
+        | RENAMETILES
+    ch_versions = ch_versions.mix(RENAMETILES.out.versions)
+
+    DZPLATEVIEWER.out.dzi
+        .first()
+        .map{ meta, dzi -> parseDzi(dzi) }
+        .combine(
+            RENAMETILES.out.images
+                .map{ meta, images -> meta }
+        )
+        .map { meta1, meta2 ->
+            def m = meta1 + meta2
+            def c = m.remove('channel')
+            [m, [channel: c]]
+        }
+        .groupTuple()
         .dump(tag: 'MINERVASTORY_in')
         | MINERVASTORY
     ch_versions = ch_versions.mix(MINERVASTORY.out.versions)
