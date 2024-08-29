@@ -83,7 +83,7 @@ workflow PLATEVIEWER {
             def c = meta.remove('channel')
             [meta, [channel: c]]
         }
-        .groupTuple()
+        .groupTuple(sort: { it.channel })
         .dump(tag: 'MINERVASTORY_in')
         | MINERVASTORY
     ch_versions = ch_versions.mix(MINERVASTORY.out.versions)

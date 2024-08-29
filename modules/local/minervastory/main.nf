@@ -16,6 +16,14 @@ process MINERVASTORY {
 
     exec:
 
+    def colorCycle = [
+        "0000ff",
+        "00ff00",
+        "ff0000",
+        "00ffff",
+        "ff00ff",
+    ]
+
     def exhibit = [
       Images: [
         [
@@ -47,13 +55,7 @@ process MINERVASTORY {
         Groups: [
             [
                 Name: "Overview",
-                Colors: [
-                    "0000ff",
-                    "ffff00",
-                    "00ffff",
-                    "00ff00",
-                    "ff0000"
-                ],
+                Colors: [colorCycle, channel_metas].transpose().collect{ it[0] },
                 Channels: channel_metas.collect{ it.channel },
                 Descriptions: channel_metas.collect{ '' }
             ]
