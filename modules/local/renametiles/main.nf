@@ -19,7 +19,7 @@ process RENAMETILES {
     input.each{
         def (_, level, base) = (it =~ $//(\d+)/([^/]+\.jpg)/$)[0]
         def newName = "${maxLevel - (level as int)}_${base}"
-        it.mklink(task.workDir.resolve(newName))
+        it.mklink(task.workDir.resolve(newName), [overwrite: true])
     }
 
     file("${task.workDir}/versions.yml").text = """\
