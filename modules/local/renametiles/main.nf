@@ -1,3 +1,5 @@
+import nextflow.extension.FilesEx
+
 process RENAMETILES {
     label 'process_single'
 
@@ -19,7 +21,7 @@ process RENAMETILES {
     input.each{
         def (_, level, base) = (it =~ $//(\d+)/([^/]+\.jpg)/$)[0]
         def newName = "${maxLevel - (level as int)}_${base}"
-        it.mklink(task.workDir.resolve(newName), [overwrite: true])
+        FilesEx.mklink(it, [overwrite: true], task.workDir.resolve(newName))
     }
 
     file("${task.workDir}/versions.yml").text = """\

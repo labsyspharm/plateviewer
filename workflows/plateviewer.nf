@@ -68,6 +68,7 @@ workflow PLATEVIEWER {
     ch_versions = ch_versions.mix(DZPLATEVIEWER.out.versions)
 
     DZPLATEVIEWER.out.images
+        .dump(tag: 'RENAMETILES_in')
         | RENAMETILES
     ch_versions = ch_versions.mix(RENAMETILES.out.versions)
 
