@@ -3,6 +3,7 @@ import groovy.json.JsonOutput
 
 process MINERVASTORY {
     label 'process_single'
+    memory 0
 
     input:
     tuple val(meta), val(channel_metas)
@@ -94,6 +95,6 @@ process MINERVASTORY {
 
     file("${task.workDir}/versions.yml").text = """\
     "${task.process}":
-        minervastory: 1.0.0
+        minervastory: 1.0.1
     """.stripIndent()
 }
