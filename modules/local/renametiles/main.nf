@@ -1,9 +1,6 @@
 import nextflow.extension.FilesEx
 
 process RENAMETILES {
-    label 'process_single'
-    memory 0
-
     input:
     tuple val(meta), val(input)
 
@@ -27,6 +24,6 @@ process RENAMETILES {
 
     file("${task.workDir}/versions.yml").text = """\
     "${task.process}":
-        renametiles: 1.0.1
+        renametiles: 1.0.2
     """.stripIndent()
 }
